@@ -1,0 +1,5 @@
+recursive-include aioraft *
+global-exclude *.pyc
+global-exclude *.swp
+global-exclude *.swo
+include VERSION README.md
