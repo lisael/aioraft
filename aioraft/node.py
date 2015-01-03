@@ -112,7 +112,7 @@ class Follower(Node):
         yield from self.update_map()
         if self._leader:
             logger.info('joining')
-            yield from self._leader.join()
+            yield from self._leader.join(self.host, self.port)
         elif not self.peers:
             logger.info('No other peers, I am the leader')
             # no peers, promote oneself
@@ -165,7 +165,7 @@ class Follower(Node):
             return done, pending
 
     def update_clients(self):
-        current_clients = set([(c.host, c.port) for c in self._clients])
+        current_clients = set([(c.remote_host, c.remote_port) for c in self._clients])
         new_clients = self.peers.difference(current_clients)
         for c in new_clients:
             self._clients.append(NodeClient(*c, loop=self.loop, node=self))
@@ -178,6 +178,7 @@ class Follower(Node):
             for c in clients:
                 map_ = yield from c.map()
                 result = json.loads(map_.decode())
+                print(result)
                 for p in result['peers']:
                     self.peers.add(p)
                 # chose the leader if it's in a higher term
@@ -212,8 +213,12 @@ class Follower(Node):
         writer.write(b'200\n\n')
         yield from writer.drain()
 
-    def _proxy_to_leader(self, method, **args):
-        pass
+    @asyncio.coroutine
+    def join(self, writer, host, port):
+        result = yield from self._leader.join(host, port)
+        writer.write(b'200\n%s\n' % result)
+        yield from writer.drain()
+
 
     @property
     def clients(self):
@@ -234,8 +239,9 @@ class Leader(Follower):
     @asyncio.coroutine
     def join(self, writer, host, port):
         self.peers.add((host, port))
+        self.set(None, '_raft/peers/%s:%s' % (host, port), '')
         self.update_clients()
-        writer.write(b'200\n')
+        writer.write(b'200\n\n')
         yield from writer.drain()
 
     @asyncio.coroutine
@@ -246,6 +252,8 @@ class Leader(Follower):
             data = yield from entry.replicate()
         else:
             data = entry.commit()
+        if writer is None:
+            return
         writer.write(b'200\n')
         writer.write(bytes(json.dumps(dict(
             key=key,

@@ -63,8 +63,8 @@ class Connection:
 class Client:
     def __init__(self, host='127.0.0.1', port='2437', loop=None, timeout=5):
         self.loop = loop if loop else asyncio.get_event_loop()
-        self.host = host
-        self.port = port
+        self.remote_host = host
+        self.remote_port = port
         self.conn = Connection(host, port, loop)
         self.timeout = timeout
 
@@ -126,18 +126,24 @@ class NodeClient(Client):
         super(NodeClient, self).__init__(*args, **kwargs)
 
     @asyncio.coroutine
-    def join(self, timeout=None):
+    def join(self, host, port, timeout=None):
         timeout = timeout if timeout is not None else self.timeout
-        data = asyncio.wait_for(self._join(), timeout)
+        data = asyncio.wait_for(self._join(host, port), timeout)
         return data
 
     @asyncio.coroutine
-    def _join(self):
+    def _join(self, host, port):
         yield from self.conn.connect()
-        self.conn.writelines([b'join\n', bytes(json.dumps(dict(host=self.node_host, port=self.node_port)), 'utf-8'), b'\n'])
+        self.conn.writelines([
+            b'join\n',
+            bytes(json.dumps(dict(host=host, port=port)),'utf-8'),
+            b'\n'
+        ])
         yield from self.conn.drain()
         code = yield from self.conn.readline()
         code = int(code)
+        data = yield from self.conn.readline()
+        return data
 
     @asyncio.coroutine
     def replicate(self, timeout=None, **kwargs):

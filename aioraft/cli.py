@@ -67,7 +67,7 @@ def main(args):
     global client
     client = Client(args.host, args.port)
     while True:
-        command = yield from async_input("raft://%s:%s > " % (client.host, client.port))
+        command = yield from async_input("raft://%s:%s > " % (client.remote_host, client.remote_port))
         command = command.strip()
         chunks = command.split(' ', 1)
         if not any(chunks):
