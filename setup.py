@@ -7,7 +7,7 @@ from setuptools import setup
 here = os.path.abspath(os.path.dirname(__file__))
 
 NAME = 'aioraft'
-DESCRIPTION = """Asyncio RAFT algorythm based on aiohttp"""
+DESCRIPTION = """Asyncio Raft algorithm based on aiohttp"""
 try:
     README = open(os.path.join(here, 'README.md')).read()
 except:
