@@ -1,4 +1,4 @@
 aioraft
 =======
 
-asyncio RAFT algorithm bassed on aiohttp
+An asyncio RAFT algorithm based on aiohttp.
