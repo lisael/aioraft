@@ -20,7 +20,7 @@ LICENSE = u'AGPL'
 URL = u'https://github.com/lisael/aioraft'
 CLASSIFIERS = ['Development Status :: 3 - Alpha',
                'Programming Language :: Python :: 3.4',
-               'License :: Other/Proprietary License']
+               'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)']
 KEYWORDS = ['asyncio', 'raft']
 PACKAGES = [
     "aioraft",
